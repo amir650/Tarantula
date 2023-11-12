@@ -1,50 +1,11 @@
 package engine
 
-import (
-	"fmt"
-	"sync"
-)
-
 type Rook struct {
 	BasePiece
 }
 
-func NewRook(alliance Alliance, position int, isMoved bool) *Piece {
-	rook := GetOrCreateRook(alliance, position, isMoved)
-	return &rook
-}
-
-var rookCache = struct {
-	sync.Mutex
-	pieces map[string]Piece
-}{
-	pieces: make(map[string]Piece),
-}
-
-func GetRookFromCache(key string) (Piece, bool) {
-	rookCache.Lock()
-	defer rookCache.Unlock()
-
-	piece, found := rookCache.pieces[key]
-	return piece, found
-}
-
-func AddRookToCache(key string, piece Piece) {
-	rookCache.Lock()
-	defer rookCache.Unlock()
-	rookCache.pieces[key] = piece
-}
-
-func GetOrCreateRook(alliance Alliance, position int, isMoved bool) Piece {
-	key := fmt.Sprintf("%d-%d-%d", alliance, position, isMoved)
-	cachedPiece, found := GetRookFromCache(key)
-	if !found {
-		var newRook = Rook{BasePiece{alliance, position, isMoved}}
-		var rookPtr Piece = &newRook
-		AddRookToCache(key, rookPtr)
-		cachedPiece = rookPtr
-	}
-	return cachedPiece
+func NewRook(alliance Alliance, position int, isMoved bool) Rook {
+	return Rook{BasePiece{alliance: alliance, position: position, isMoved: isMoved}}
 }
 
 func (rook Rook) GetAlliance() Alliance {
@@ -56,7 +17,7 @@ func (rook Rook) GetPiecePosition() int {
 }
 
 func (rook Rook) String() string {
-	return "R"
+	return RookIdentifier
 }
 
 func (rook Rook) CalculateLegalMoves(board *Board) []Move {
@@ -95,8 +56,8 @@ func (rook Rook) CalculateLegalMoves(board *Board) []Move {
 	return legalMoves
 }
 
-func (rook Rook) MovePiece(m Move) *Piece {
-	return NewRook(rook.GetAlliance(), m.GetTo(), true)
+func (rook Rook) MovePiece(m Move) Piece {
+	return Rook{BasePiece{rook.GetAlliance(), m.GetTo(), true}}
 }
 
 func (rook Rook) Equals(other Piece) bool {

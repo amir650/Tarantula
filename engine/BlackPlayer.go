@@ -18,7 +18,7 @@ func NewBlackPlayer(board *Board,
 	return blackPlayer
 }
 
-func (p BlackPlayer) GetActivePieces() []*Piece {
+func (p BlackPlayer) GetActivePieces() []Piece {
 	return p.board.GetBlackPieces()
 }
 

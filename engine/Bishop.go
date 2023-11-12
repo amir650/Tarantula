@@ -1,69 +1,26 @@
 package engine
 
-import (
-	"fmt"
-	"sync"
-)
-
 type Bishop struct {
 	BasePiece
 }
 
-func NewBishop(alliance Alliance, position int, isMoved bool) *Piece {
-	bishop := GetOrCreateBishop(alliance, position, isMoved)
-	return &bishop
+func NewBishop(alliance Alliance, position int, isMoved bool) Bishop {
+	return Bishop{BasePiece{alliance: alliance, position: position, isMoved: isMoved}}
 }
 
-var bishopCache = struct {
-	sync.Mutex
-	pieces map[string]Piece
-}{
-	pieces: make(map[string]Piece),
-}
-
-func GetBishopFromCache(key string) (Piece, bool) {
-	bishopCache.Lock()
-	defer bishopCache.Unlock()
-
-	piece, found := bishopCache.pieces[key]
-	return piece, found
-}
-
-func AddPBishopToCache(key string, piece Piece) {
-	bishopCache.Lock()
-	defer bishopCache.Unlock()
-	bishopCache.pieces[key] = piece
-}
-
-func GetOrCreateBishop(alliance Alliance, position int, isMoved bool) Piece {
-	key := fmt.Sprintf("%d-%d-%d", alliance, position, isMoved)
-	// Check if the piece is already in the cache
-	cachedPiece, found := GetBishopFromCache(key)
-	if !found {
-		// If not found, create a new piece
-		var newBishop = Bishop{BasePiece{alliance, position, isMoved}}
-		var bishopPtr Piece = &newBishop
-		// Add it to the cache
-		AddPBishopToCache(key, bishopPtr)
-		// Use the newly created piece
-		cachedPiece = bishopPtr
-	}
-	return cachedPiece
-}
-
-func (bishop *Bishop) GetAlliance() Alliance {
+func (bishop Bishop) GetAlliance() Alliance {
 	return bishop.alliance
 }
 
-func (bishop *Bishop) GetPiecePosition() int {
+func (bishop Bishop) GetPiecePosition() int {
 	return bishop.position
 }
 
-func (bishop *Bishop) String() string {
-	return "B"
+func (bishop Bishop) String() string {
+	return BishopIdentifier
 }
 
-func (bishop *Bishop) CalculateLegalMoves(board *Board) []Move {
+func (bishop Bishop) CalculateLegalMoves(board *Board) []Move {
 
 	isDiagonalExclusion := func(currentCandidate int, candidateDestinationCoordinate int) bool {
 		return (FirstColumn[candidateDestinationCoordinate] &&
@@ -102,12 +59,11 @@ func (bishop *Bishop) CalculateLegalMoves(board *Board) []Move {
 	return legalMoves
 }
 
-func (bishop *Bishop) MovePiece(m Move) *Piece {
-	m.GetMovedPiece()
-	return NewBishop(bishop.GetAlliance(), m.GetTo(), true)
+func (bishop Bishop) MovePiece(m Move) Piece {
+	return Bishop{BasePiece{bishop.GetAlliance(), m.GetTo(), true}}
 }
 
-func (bishop *Bishop) Equals(other Piece) bool {
+func (bishop Bishop) Equals(other Piece) bool {
 	if kn, ok := other.(*Bishop); ok {
 		return bishop.GetPiecePosition() == kn.GetPiecePosition() && bishop.GetAlliance() == kn.GetAlliance()
 	} else {
@@ -115,11 +71,11 @@ func (bishop *Bishop) Equals(other Piece) bool {
 	}
 }
 
-func (bishop *Bishop) GetPieceValue() int {
+func (bishop Bishop) GetPieceValue() int {
 	return 330
 }
 
-func (bishop *Bishop) GetLocationBonus() int {
+func (bishop Bishop) GetLocationBonus() int {
 	a := bishop.GetAlliance()
 	switch a {
 	case WHITE:

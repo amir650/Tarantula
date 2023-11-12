@@ -1,69 +1,26 @@
 package engine
 
-import (
-	"fmt"
-	"sync"
-)
-
 type Queen struct {
 	BasePiece
 }
 
-func NewQueen(alliance Alliance, position int, isMoved bool) *Piece {
-	queen := GetOrCreateQueen(alliance, position, isMoved)
-	return &queen
+func NewQueen(alliance Alliance, position int, isMoved bool) Queen {
+	return Queen{BasePiece{alliance: alliance, position: position, isMoved: isMoved}}
 }
 
-var queenCache = struct {
-	sync.Mutex
-	pieces map[string]Piece
-}{
-	pieces: make(map[string]Piece),
-}
-
-func GetQueenFromCache(key string) (Piece, bool) {
-	queenCache.Lock()
-	defer queenCache.Unlock()
-
-	piece, found := queenCache.pieces[key]
-	return piece, found
-}
-
-func AddQueenToCache(key string, piece Piece) {
-	queenCache.Lock()
-	defer queenCache.Unlock()
-	queenCache.pieces[key] = piece
-}
-
-func GetOrCreateQueen(alliance Alliance, position int, isMoved bool) Piece {
-	key := fmt.Sprintf("%d-%d-%d", alliance, position, isMoved)
-	// Check if the piece is already in the cache
-	cachedPiece, found := GetQueenFromCache(key)
-	if !found {
-		// If not found, create a new piece
-		var newQueen = Queen{BasePiece{alliance, position, isMoved}}
-		var queenPtr Piece = &newQueen
-		// Add it to the cache
-		AddQueenToCache(key, queenPtr)
-		// Use the newly created piece
-		cachedPiece = queenPtr
-	}
-	return cachedPiece
-}
-
-func (queen *Queen) GetAlliance() Alliance {
+func (queen Queen) GetAlliance() Alliance {
 	return queen.alliance
 }
 
-func (queen *Queen) GetPiecePosition() int {
+func (queen Queen) GetPiecePosition() int {
 	return queen.position
 }
 
-func (queen *Queen) String() string {
-	return "Q"
+func (queen Queen) String() string {
+	return QueenIdentifier
 }
 
-func (queen *Queen) CalculateLegalMoves(board *Board) []Move {
+func (queen Queen) CalculateLegalMoves(board *Board) []Move {
 	isColumnExclusion := func(currentCandidate int, candidateDestinationCoordinate int) bool {
 		return (FirstColumn[candidateDestinationCoordinate] && (currentCandidate == -9 || currentCandidate == -1 || currentCandidate == 7)) ||
 			(EighthColumn[candidateDestinationCoordinate] && (currentCandidate == -7 || currentCandidate == 1 || currentCandidate == 9))
@@ -100,23 +57,23 @@ func (queen *Queen) CalculateLegalMoves(board *Board) []Move {
 	return legalMoves
 }
 
-func (queen *Queen) MovePiece(m Move) *Piece {
-	return NewQueen(queen.GetAlliance(), m.GetTo(), true)
+func (queen Queen) MovePiece(m Move) Piece {
+	return Queen{BasePiece{queen.GetAlliance(), m.GetTo(), true}}
 }
 
-func (queen *Queen) Equals(other Piece) bool {
-	if q, ok := other.(*Queen); ok {
+func (queen Queen) Equals(other Piece) bool {
+	if q, ok := other.(Queen); ok {
 		return queen.GetPiecePosition() == q.GetPiecePosition() && queen.GetAlliance() == q.GetAlliance()
 	} else {
 		return false
 	}
 }
 
-func (queen *Queen) GetPieceValue() int {
+func (queen Queen) GetPieceValue() int {
 	return 900
 }
 
-func (queen *Queen) GetLocationBonus() int {
+func (queen Queen) GetLocationBonus() int {
 	a := queen.GetAlliance()
 	switch a {
 	case WHITE:

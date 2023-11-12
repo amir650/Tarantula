@@ -5,8 +5,8 @@ type Move interface {
 	GetFrom() int
 	GetTo() int
 	IsAttack() bool
-	GetMovedPiece() *Piece
-	GetAttackedPiece() *Piece
+	GetMovedPiece() Piece
+	GetAttackedPiece() Piece
 	String() string
 	Execute() *Board
 }

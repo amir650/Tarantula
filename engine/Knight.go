@@ -1,73 +1,26 @@
 package engine
 
-import (
-	"fmt"
-	"sync"
-)
-
 type Knight struct {
 	BasePiece
 }
 
-var knightCache = struct {
-	sync.Mutex
-	pieces map[string]Piece
-}{
-	pieces: make(map[string]Piece),
+func NewKnight(alliance Alliance, position int, isMoved bool) Knight {
+	return Knight{BasePiece{alliance: alliance, position: position, isMoved: isMoved}}
 }
 
-func NewKnight(alliance Alliance,
-	position int,
-	isMoved bool) *Piece {
-	knight := GetOrCreateKnight(alliance, position, isMoved)
-	return &knight
-}
-
-func GetKnightFromCache(key string) (Piece, bool) {
-	knightCache.Lock()
-	defer knightCache.Unlock()
-
-	piece, found := knightCache.pieces[key]
-	return piece, found
-}
-
-func AddKnightToCache(key string, piece Piece) {
-	knightCache.Lock()
-	defer knightCache.Unlock()
-	knightCache.pieces[key] = piece
-}
-
-func GetOrCreateKnight(alliance Alliance,
-	position int,
-	isMoved bool) Piece {
-	key := fmt.Sprintf("%d-%d", alliance, position)
-	// Check if the piece is already in the cache
-	cachedPiece, found := GetKnightFromCache(key)
-	if !found {
-		// If not found, create a new piece
-		var newKnight = Knight{BasePiece{alliance, position, isMoved}}
-		var knightPtr Piece = &newKnight
-		// Add it to the cache
-		AddKnightToCache(key, knightPtr)
-		// Use the newly created piece
-		cachedPiece = knightPtr
-	}
-	return cachedPiece
-}
-
-func (knight *Knight) GetAlliance() Alliance {
+func (knight Knight) GetAlliance() Alliance {
 	return knight.alliance
 }
 
-func (knight *Knight) GetPiecePosition() int {
+func (knight Knight) GetPiecePosition() int {
 	return knight.position
 }
 
-func (knight *Knight) String() string {
-	return "N"
+func (knight Knight) String() string {
+	return KnightIdentifier
 }
 
-func (knight *Knight) CalculateLegalMoves(board *Board) []Move {
+func (knight Knight) CalculateLegalMoves(board *Board) []Move {
 
 	isFirstColumnExclusion := func(piecePosition int, currentCandidate int) bool {
 		return FirstColumn[piecePosition] && ((currentCandidate == -17) ||
@@ -115,23 +68,23 @@ func (knight *Knight) CalculateLegalMoves(board *Board) []Move {
 	return legalMoves
 }
 
-func (knight *Knight) MovePiece(m Move) *Piece {
-	return NewKnight(knight.GetAlliance(), m.GetTo(), true)
+func (knight Knight) MovePiece(m Move) Piece {
+	return Knight{BasePiece{knight.GetAlliance(), m.GetTo(), true}}
 }
 
-func (knight *Knight) Equals(other Piece) bool {
-	if kn, ok := other.(*Knight); ok {
+func (knight Knight) Equals(other Piece) bool {
+	if kn, ok := other.(Knight); ok {
 		return knight.GetPiecePosition() == kn.GetPiecePosition() && knight.GetAlliance() == kn.GetAlliance()
 	} else {
 		return false
 	}
 }
 
-func (knight *Knight) GetPieceValue() int {
+func (knight Knight) GetPieceValue() int {
 	return 300
 }
 
-func (knight *Knight) GetLocationBonus() int {
+func (knight Knight) GetLocationBonus() int {
 	a := knight.GetAlliance()
 	switch a {
 	case WHITE:

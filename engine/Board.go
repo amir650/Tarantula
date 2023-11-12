@@ -22,8 +22,7 @@ func (builder *BoardBuilder) SetMoveMaker(alliance Alliance) *BoardBuilder {
 	return builder
 }
 
-func (builder *BoardBuilder) SetPiece(piecePtr *Piece) *BoardBuilder {
-	piece := *piecePtr
+func (builder *BoardBuilder) SetPiece(piece Piece) *BoardBuilder {
 	builder.piecesMap[piece.GetPiecePosition()] = piece
 	return builder
 }
@@ -44,8 +43,8 @@ func (builder *BoardBuilder) Build() *Board {
 
 type Board struct {
 	gameBoard     *[]Tile
-	whitePieces   []*Piece
-	blackPieces   []*Piece
+	whitePieces   *[]Piece
+	blackPieces   *[]Piece
 	whiteLegals   *[]Move
 	blackLegals   *[]Move
 	whitePlayer   *Player
@@ -88,8 +87,8 @@ func (b Board) GetTile(coordinate int) Tile {
 	return (*b.gameBoard)[coordinate]
 }
 
-func (b Board) GetAllPieces() []*Piece {
-	result := make([]*Piece, len(b.GetWhitePieces())+len(b.GetBlackPieces()))
+func (b Board) GetAllPieces() []Piece {
+	result := make([]Piece, len(b.GetWhitePieces())+len(b.GetBlackPieces()))
 	copy(result[:len(b.GetWhitePieces())], b.GetWhitePieces())
 	copy(result[len(b.GetBlackPieces()):], b.GetBlackPieces())
 	return result
@@ -110,8 +109,8 @@ func (b Board) GetAllLegalMoves() []Move {
 
 func NewBoard(builder *BoardBuilder) *Board {
 	tiles := make([]Tile, 64)
-	var whitePieces []*Piece
-	var blackPieces []*Piece
+	var whitePieces []Piece
+	var blackPieces []Piece
 	var whiteKing *King
 	var blackKing *King
 	for i := 0; i < 64; i++ {
@@ -122,19 +121,19 @@ func NewBoard(builder *BoardBuilder) *Board {
 				piece:  &piece,
 			}
 			if piece.GetAlliance() == WHITE {
-				whitePieces = append(whitePieces, &piece)
+				whitePieces = append(whitePieces, piece)
 				switch (piece).(type) {
-				case *King:
-					if k, ok := piece.(*King); ok {
-						whiteKing = k
+				case King:
+					if k, ok := piece.(King); ok {
+						whiteKing = &k
 					}
 				}
 			} else if piece.GetAlliance() == BLACK {
-				blackPieces = append(blackPieces, &piece)
+				blackPieces = append(blackPieces, piece)
 				switch piece.(type) {
-				case *King:
-					if k, ok := piece.(*King); ok {
-						blackKing = k
+				case King:
+					if k, ok := piece.(King); ok {
+						blackKing = &k
 					}
 				}
 			}
@@ -153,8 +152,8 @@ func NewBoard(builder *BoardBuilder) *Board {
 
 	protoBoard := Board{
 		gameBoard:     &tiles,
-		whitePieces:   whitePieces,
-		blackPieces:   blackPieces,
+		whitePieces:   &whitePieces,
+		blackPieces:   &blackPieces,
 		whiteLegals:   &whiteLegals,
 		blackLegals:   &blackLegals,
 		whitePlayer:   &whitePlayer,
@@ -171,13 +170,11 @@ func NewBoard(builder *BoardBuilder) *Board {
 	return &protoBoard
 }
 
-func calculatePieceLegals(b *Board, pieces []*Piece) []Move {
+func calculatePieceLegals(b *Board, pieces []Piece) []Move {
 	var legalMoves []Move
 	for _, piece := range pieces {
-		p := *piece
-		var pieceLegals = p.CalculateLegalMoves(b)
+		var pieceLegals = piece.CalculateLegalMoves(b)
 		legalMoves = append(legalMoves, pieceLegals...)
-		//fmt.Printf("%s: %v\n", piecePtr, pieceLegals)
 	}
 	return legalMoves
 }
@@ -279,12 +276,12 @@ func (b Board) CalculateLegalMovesParallel() []Move {
 	return legalMoves
 }
 
-func (b Board) GetBlackPieces() []*Piece {
-	return b.blackPieces
+func (b Board) GetBlackPieces() []Piece {
+	return *b.blackPieces
 }
 
-func (b Board) GetWhitePieces() []*Piece {
-	return b.whitePieces
+func (b Board) GetWhitePieces() []Piece {
+	return *b.whitePieces
 }
 
 func concatenate(slice1, slice2 []Piece) []Piece {
@@ -319,42 +316,41 @@ func CreateStandardChessBoard() *Board {
 
 	boardBuilder := NewBoardBuilder()
 
-	boardBuilder.SetPiece(NewRook(BLACK, 0, false))
-	boardBuilder.SetPiece(NewKnight(BLACK, 1, false))
-	boardBuilder.SetPiece(NewBishop(BLACK, 2, false))
-	boardBuilder.SetPiece(NewQueen(BLACK, 3, false))
-	boardBuilder.SetPiece(NewKing(BLACK, 4, false, false, true, true))
-	boardBuilder.SetPiece(NewBishop(BLACK, 5, false))
-	boardBuilder.SetPiece(NewKnight(BLACK, 6, false))
-	boardBuilder.SetPiece(NewRook(BLACK, 7, false))
-	boardBuilder.SetPiece(NewPawn(BLACK, 8, false))
-	boardBuilder.SetPiece(NewPawn(BLACK, 9, false))
-	boardBuilder.SetPiece(NewPawn(BLACK, 10, false))
-	boardBuilder.SetPiece(NewPawn(BLACK, 11, false))
-	boardBuilder.SetPiece(NewPawn(BLACK, 12, false))
-	boardBuilder.SetPiece(NewPawn(BLACK, 13, false))
-	boardBuilder.SetPiece(NewPawn(BLACK, 14, false))
-	boardBuilder.SetPiece(NewPawn(BLACK, 15, false))
+	boardBuilder.SetPiece(Rook{BasePiece{BLACK, 0, false}})
+	boardBuilder.SetPiece(Knight{BasePiece{BLACK, 1, false}})
+	boardBuilder.SetPiece(Bishop{BasePiece{BLACK, 2, false}})
+	boardBuilder.SetPiece(Queen{BasePiece{BLACK, 3, false}})
+	boardBuilder.SetPiece(King{BasePiece{BLACK, 4, false}, false, true, true})
+	boardBuilder.SetPiece(Bishop{BasePiece{BLACK, 5, false}})
+	boardBuilder.SetPiece(Knight{BasePiece{BLACK, 6, false}})
+	boardBuilder.SetPiece(Rook{BasePiece{BLACK, 7, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{BLACK, 8, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{BLACK, 9, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{BLACK, 10, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{BLACK, 11, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{BLACK, 12, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{BLACK, 13, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{BLACK, 14, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{BLACK, 15, false}})
 
-	boardBuilder.SetPiece(NewPawn(WHITE, 48, false))
-	boardBuilder.SetPiece(NewPawn(WHITE, 49, false))
-	boardBuilder.SetPiece(NewPawn(WHITE, 50, false))
-	boardBuilder.SetPiece(NewPawn(WHITE, 51, false))
-	boardBuilder.SetPiece(NewPawn(WHITE, 52, false))
-	boardBuilder.SetPiece(NewPawn(WHITE, 53, false))
-	boardBuilder.SetPiece(NewPawn(WHITE, 54, false))
-	boardBuilder.SetPiece(NewPawn(WHITE, 55, false))
-	boardBuilder.SetPiece(NewRook(WHITE, 56, false))
-	boardBuilder.SetPiece(NewKnight(WHITE, 57, false))
-	boardBuilder.SetPiece(NewBishop(WHITE, 58, false))
-	boardBuilder.SetPiece(NewQueen(WHITE, 59, false))
-	boardBuilder.SetPiece(NewKing(WHITE, 60, false, false, true, true))
-	boardBuilder.SetPiece(NewBishop(WHITE, 61, false))
-	boardBuilder.SetPiece(NewKnight(WHITE, 62, false))
-	boardBuilder.SetPiece(NewRook(WHITE, 63, false))
+	boardBuilder.SetPiece(Pawn{BasePiece{WHITE, 48, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{WHITE, 49, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{WHITE, 50, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{WHITE, 51, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{WHITE, 52, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{WHITE, 53, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{WHITE, 54, false}})
+	boardBuilder.SetPiece(Pawn{BasePiece{WHITE, 55, false}})
+	boardBuilder.SetPiece(Rook{BasePiece{WHITE, 56, false}})
+	boardBuilder.SetPiece(Knight{BasePiece{WHITE, 57, false}})
+	boardBuilder.SetPiece(Bishop{BasePiece{WHITE, 58, false}})
+	boardBuilder.SetPiece(Queen{BasePiece{WHITE, 59, false}})
+	boardBuilder.SetPiece(King{BasePiece{WHITE, 60, false}, false, true, true})
+	boardBuilder.SetPiece(Bishop{BasePiece{WHITE, 61, false}})
+	boardBuilder.SetPiece(Knight{BasePiece{WHITE, 62, false}})
+	boardBuilder.SetPiece(Rook{BasePiece{WHITE, 63, false}})
+
 	boardBuilder.SetMoveMaker(WHITE)
-
 	standardBoard := boardBuilder.Build()
-
 	return standardBoard
 }

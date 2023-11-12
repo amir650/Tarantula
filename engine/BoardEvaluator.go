@@ -50,8 +50,8 @@ func attacks(player Player) int {
 	var attackScore = 0
 	for _, move := range player.GetLegalMoves() {
 		if move.IsAttack() {
-			movedPiece := *move.GetMovedPiece()
-			attackedPiece := *move.GetAttackedPiece()
+			movedPiece := move.GetMovedPiece()
+			attackedPiece := move.GetAttackedPiece()
 			if movedPiece.GetPieceValue() <= attackedPiece.GetPieceValue() {
 				attackScore++
 			}
@@ -88,8 +88,7 @@ func mobilityRatio(player Player) int {
 func pieceEvaluations(player Player) int {
 	var pieceValuationScore = 0
 	var numBishops = 0
-	for _, piecePtr := range player.GetActivePieces() {
-		piece := *piecePtr
+	for _, piece := range player.GetActivePieces() {
 		pieceValuationScore += piece.GetPieceValue()
 		_, ok := piece.(*Bishop)
 		if ok {

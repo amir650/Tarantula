@@ -11,17 +11,16 @@ func NewAttackMove(b *Board, p Piece, to int, attackedPiece Piece) AttackMove {
 
 func (m AttackMove) Execute() *Board {
 	builder := NewBoardBuilder()
-	for _, piecePtr := range m.GetBoard().GetCurrentPlayer().GetActivePieces() {
-		mp := *m.GetMovedPiece()
-		piece := *piecePtr
+	for _, piece := range m.GetBoard().GetCurrentPlayer().GetActivePieces() {
+		mp := m.GetMovedPiece()
 		if !mp.Equals(piece) {
-			builder.SetPiece(piecePtr)
+			builder.SetPiece(piece)
 		}
 	}
 	for _, piecePtr := range m.GetBoard().GetCurrentPlayer().GetOpponent().GetActivePieces() {
 		builder.SetPiece(piecePtr)
 	}
-	mp := *m.GetMovedPiece()
+	mp := m.GetMovedPiece()
 	var finishedMovingPiece = mp.MovePiece(m)
 	builder.SetPiece(finishedMovingPiece)
 	builder.SetMoveMaker(m.GetBoard().GetCurrentPlayer().GetOpponent().GetAlliance())
@@ -29,7 +28,7 @@ func (m AttackMove) Execute() *Board {
 }
 
 func (m AttackMove) String() string {
-	mp := *m.GetMovedPiece()
+	mp := m.GetMovedPiece()
 	return mp.String() + "x" + AlgebraicNotation[m.toCoordinate]
 }
 

@@ -9,6 +9,6 @@ func NewPawnAttackMove(b *Board, p Piece, to int, attackedPiece Piece) PawnAttac
 }
 
 func (m PawnAttackMove) String() string {
-	mp := *m.GetMovedPiece()
+	mp := m.GetMovedPiece()
 	return AlgebraicNotation[mp.GetPiecePosition()][0:1] + "x" + AlgebraicNotation[m.toCoordinate]
 }

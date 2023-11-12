@@ -8,8 +8,12 @@ import (
 )
 
 func main() {
+	selfPlay()
+}
+
+func selfPlay() {
 	board := engine.CreateStandardChessBoard()
-	strategy := engine.NewMinimax(6, true)
+	strategy := engine.NewMinimax(4, true)
 	for {
 		fmt.Println(board.String())
 		m := strategy.Execute(board)
@@ -34,7 +38,7 @@ func playInteractiveGame() {
 		dest := scanner.Text()
 
 		for _, move := range board.GetAllLegalMoves() {
-			fmt.Printf("debug print %s: %s\n", *move.GetMovedPiece(), move)
+			fmt.Printf("debug print %s: %s\n", move.GetMovedPiece(), move)
 		}
 
 		// Print the input

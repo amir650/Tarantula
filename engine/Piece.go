@@ -5,7 +5,7 @@ type Piece interface {
 	GetAlliance() Alliance
 	GetPiecePosition() int
 	String() string
-	MovePiece(m Move) *Piece
+	MovePiece(m Move) Piece
 	Equals(other Piece) bool
 	GetPieceValue() int
 	GetLocationBonus() int

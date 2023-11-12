@@ -18,7 +18,7 @@ func NewWhitePlayer(board *Board,
 	return whitePlayer
 }
 
-func (w WhitePlayer) GetActivePieces() []*Piece {
+func (w WhitePlayer) GetActivePieces() []Piece {
 	return w.board.GetWhitePieces()
 }
 

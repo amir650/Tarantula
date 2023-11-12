@@ -2,7 +2,7 @@ package engine
 
 type Player interface {
 	GetBoard() *Board
-	GetActivePieces() []*Piece
+	GetActivePieces() []Piece
 	GetLegalMoves() []Move
 	GetAlliance() Alliance
 	GetOpponent() Player

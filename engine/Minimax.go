@@ -100,17 +100,17 @@ func (strategy *Minimax) maximize(board *Board, depth int) int {
 	if isEndGameScenario(board) {
 		return strategy.boardEvaluator.Evaluate(board, depth)
 	}
-	lowestSeenValue := math.MaxInt32
+	highestSeenValue := math.MinInt32
 	for _, move := range board.GetCurrentPlayer().GetLegalMoves() {
 		moveTransition := board.GetCurrentPlayer().MakeMove(move)
 		if moveTransition.GetMoveStatus() == Done {
 			currentValue := strategy.minimize(moveTransition.GetToBoard(), depth-1)
-			if currentValue <= lowestSeenValue {
-				lowestSeenValue = currentValue
+			if currentValue >= highestSeenValue {
+				highestSeenValue = currentValue
 			}
 		}
 	}
-	return lowestSeenValue
+	return highestSeenValue
 }
 
 func (strategy *Minimax) minimize(board *Board, depth int) int {
@@ -122,20 +122,16 @@ func (strategy *Minimax) minimize(board *Board, depth int) int {
 	if isEndGameScenario(board) {
 		return strategy.boardEvaluator.Evaluate(board, depth)
 	}
-	highestSeenValue := math.MinInt32
+	lowestSeenValue := math.MaxInt32
 	for _, move := range board.GetCurrentPlayer().GetLegalMoves() {
 		moveTransition := board.GetCurrentPlayer().MakeMove(move)
 		if moveTransition.GetMoveStatus() == Done {
 			currentValue := strategy.maximize(moveTransition.GetToBoard(), depth-1)
-			if currentValue >= highestSeenValue {
-				highestSeenValue = currentValue
+			if currentValue <= lowestSeenValue {
+				lowestSeenValue = currentValue
 			}
 		}
 	}
-	return highestSeenValue
+	return lowestSeenValue
 
-}
-
-func isEndGameScenario(board *Board) bool {
-	return board.GetCurrentPlayer().IsInCheckMate() || board.GetCurrentPlayer().IsInStaleMate()
 }

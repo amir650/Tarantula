@@ -1,71 +1,26 @@
 package engine
 
-import (
-	"fmt"
-	"sync"
-)
-
 type Pawn struct {
 	BasePiece
 }
 
-func NewPawn(alliance Alliance, position int, isMoved bool) *Piece {
-	pawn := GetOrCreatePawn(alliance, position, isMoved)
-	return &pawn
+func NewPawn(alliance Alliance, position int, isMoved bool) Pawn {
+	return Pawn{BasePiece{alliance: alliance, position: position, isMoved: isMoved}}
 }
 
-var pawnCache = struct {
-	sync.Mutex
-	pieces map[string]Piece
-}{
-	pieces: make(map[string]Piece),
-}
-
-func GetPawnFromCache(key string) (Piece, bool) {
-	pawnCache.Lock()
-	defer pawnCache.Unlock()
-
-	piece, found := pawnCache.pieces[key]
-	return piece, found
-}
-
-func AddPawnToCache(key string, piece Piece) {
-	pawnCache.Lock()
-	defer pawnCache.Unlock()
-	pawnCache.pieces[key] = piece
-}
-
-func GetOrCreatePawn(alliance Alliance,
-	position int,
-	isMoved bool) Piece {
-	key := fmt.Sprintf("%d-%d-%d", alliance, position, isMoved)
-	// Check if the piece is already in the cache
-	cachedPiece, found := GetPawnFromCache(key)
-	if !found {
-		// If not found, create a new piece
-		var newPawn = Pawn{BasePiece{alliance, position, isMoved}}
-		var pawnPtr Piece = &newPawn
-		// Add it to the cache
-		AddPawnToCache(key, pawnPtr)
-		// Use the newly created piece
-		cachedPiece = pawnPtr
-	}
-	return cachedPiece
-}
-
-func (pawn *Pawn) GetAlliance() Alliance {
+func (pawn Pawn) GetAlliance() Alliance {
 	return pawn.alliance
 }
 
-func (pawn *Pawn) GetPiecePosition() int {
+func (pawn Pawn) GetPiecePosition() int {
 	return pawn.position
 }
 
-func (pawn *Pawn) String() string {
-	return "P"
+func (pawn Pawn) String() string {
+	return PawnIdentifier
 }
 
-func (pawn *Pawn) CalculateLegalMoves(board *Board) []Move {
+func (pawn Pawn) CalculateLegalMoves(board *Board) []Move {
 	var legalMoves []Move
 	var CandidateMoveCoordinates = []int{8, 16, 7, 9}
 	for _, currentCandidateOffset := range CandidateMoveCoordinates {
@@ -77,10 +32,10 @@ func (pawn *Pawn) CalculateLegalMoves(board *Board) []Move {
 
 		if currentCandidateOffset == 8 && !t.IsOccupied() {
 			if pawn.alliance.IsPawnPromotionSquare(candidateDestinationCoordinate) {
-				var promotedToKnight = NewKnight(pawn.alliance, candidateDestinationCoordinate, true)
-				var promotedToBishop = NewBishop(pawn.alliance, candidateDestinationCoordinate, true)
-				var promotedToRook = NewRook(pawn.alliance, candidateDestinationCoordinate, true)
-				var promotedToQueen = NewQueen(pawn.alliance, candidateDestinationCoordinate, true)
+				var promotedToKnight = Knight{BasePiece{pawn.alliance, candidateDestinationCoordinate, true}}
+				var promotedToBishop = Bishop{BasePiece{pawn.alliance, candidateDestinationCoordinate, true}}
+				var promotedToRook = Rook{BasePiece{pawn.alliance, candidateDestinationCoordinate, true}}
+				var promotedToQueen = Queen{BasePiece{pawn.alliance, candidateDestinationCoordinate, true}}
 				legalMoves = append(legalMoves, NewPawnPromotion(NewPawnMove(board, pawn, candidateDestinationCoordinate), promotedToKnight))
 				legalMoves = append(legalMoves, NewPawnPromotion(NewPawnMove(board, pawn, candidateDestinationCoordinate), promotedToBishop))
 				legalMoves = append(legalMoves, NewPawnPromotion(NewPawnMove(board, pawn, candidateDestinationCoordinate), promotedToRook))
@@ -103,10 +58,10 @@ func (pawn *Pawn) CalculateLegalMoves(board *Board) []Move {
 				var pieceOnCandidate = board.GetTile(candidateDestinationCoordinate).GetPiece()
 				if pawn.alliance != pieceOnCandidate.GetAlliance() {
 					if pawn.alliance.IsPawnPromotionSquare(candidateDestinationCoordinate) {
-						var promotedToKnight = NewKnight(pawn.alliance, candidateDestinationCoordinate, true)
-						var promotedToBishop = NewBishop(pawn.alliance, candidateDestinationCoordinate, true)
-						var promotedToRook = NewRook(pawn.alliance, candidateDestinationCoordinate, true)
-						var promotedToQueen = NewQueen(pawn.alliance, candidateDestinationCoordinate, true)
+						var promotedToKnight = Knight{BasePiece{pawn.alliance, candidateDestinationCoordinate, true}}
+						var promotedToBishop = Bishop{BasePiece{pawn.alliance, candidateDestinationCoordinate, true}}
+						var promotedToRook = Rook{BasePiece{pawn.alliance, candidateDestinationCoordinate, true}}
+						var promotedToQueen = Queen{BasePiece{pawn.alliance, candidateDestinationCoordinate, true}}
 						legalMoves = append(legalMoves, NewPawnPromotion(NewPawnMove(board, pawn, candidateDestinationCoordinate), promotedToKnight))
 						legalMoves = append(legalMoves, NewPawnPromotion(NewPawnMove(board, pawn, candidateDestinationCoordinate), promotedToBishop))
 						legalMoves = append(legalMoves, NewPawnPromotion(NewPawnMove(board, pawn, candidateDestinationCoordinate), promotedToRook))
@@ -129,10 +84,10 @@ func (pawn *Pawn) CalculateLegalMoves(board *Board) []Move {
 			if board.GetTile(candidateDestinationCoordinate).IsOccupied() {
 				if pawn.alliance != board.GetTile(candidateDestinationCoordinate).GetPiece().GetAlliance() {
 					if pawn.alliance.IsPawnPromotionSquare(candidateDestinationCoordinate) {
-						var promotedToKnight = NewKnight(pawn.alliance, candidateDestinationCoordinate, true)
-						var promotedToBishop = NewBishop(pawn.alliance, candidateDestinationCoordinate, true)
-						var promotedToRook = NewRook(pawn.alliance, candidateDestinationCoordinate, true)
-						var promotedToQueen = NewQueen(pawn.alliance, candidateDestinationCoordinate, true)
+						var promotedToKnight = Knight{BasePiece{pawn.alliance, candidateDestinationCoordinate, true}}
+						var promotedToBishop = Bishop{BasePiece{pawn.alliance, candidateDestinationCoordinate, true}}
+						var promotedToRook = Rook{BasePiece{pawn.alliance, candidateDestinationCoordinate, true}}
+						var promotedToQueen = Queen{BasePiece{pawn.alliance, candidateDestinationCoordinate, true}}
 						legalMoves = append(legalMoves, NewPawnPromotion(NewPawnMove(board, pawn, candidateDestinationCoordinate), promotedToKnight))
 						legalMoves = append(legalMoves, NewPawnPromotion(NewPawnMove(board, pawn, candidateDestinationCoordinate), promotedToBishop))
 						legalMoves = append(legalMoves, NewPawnPromotion(NewPawnMove(board, pawn, candidateDestinationCoordinate), promotedToRook))
@@ -153,23 +108,23 @@ func (pawn *Pawn) CalculateLegalMoves(board *Board) []Move {
 	return legalMoves
 }
 
-func (pawn *Pawn) MovePiece(m Move) *Piece {
-	return NewPawn(pawn.GetAlliance(), m.GetTo(), true)
+func (pawn Pawn) MovePiece(m Move) Piece {
+	return Pawn{BasePiece{pawn.GetAlliance(), m.GetTo(), true}}
 }
 
-func (pawn *Pawn) Equals(other Piece) bool {
-	if p, ok := other.(*Pawn); ok {
+func (pawn Pawn) Equals(other Piece) bool {
+	if p, ok := other.(Pawn); ok {
 		return pawn.GetPiecePosition() == p.GetPiecePosition() && pawn.GetAlliance() == p.GetAlliance()
 	} else {
 		return false
 	}
 }
 
-func (pawn *Pawn) GetPieceValue() int {
+func (pawn Pawn) GetPieceValue() int {
 	return 100
 }
 
-func (pawn *Pawn) GetLocationBonus() int {
+func (pawn Pawn) GetLocationBonus() int {
 	a := pawn.GetAlliance()
 	switch a {
 	case WHITE:

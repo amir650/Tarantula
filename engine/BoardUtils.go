@@ -2,6 +2,13 @@ package engine
 
 const NumTiles = 64
 
+const KingIdentifier = "K"
+const QueenIdentifier = "Q"
+const RookIdentifier = "R"
+const BishopIdentifier = "B"
+const KnightIdentifier = "N"
+const PawnIdentifier = "P"
+
 func IsValidTileCoordinate(coordinate int) bool {
 	return coordinate >= 0 && coordinate < NumTiles
 }
@@ -22,6 +29,10 @@ func createColumnValues(columnNumber int) []bool {
 		columnValues[i] = true
 	}
 	return columnValues
+}
+
+func isEndGameScenario(board *Board) bool {
+	return board.GetCurrentPlayer().IsInCheckMate() || board.GetCurrentPlayer().IsInStaleMate()
 }
 
 var FirstColumn = createColumnValues(1)

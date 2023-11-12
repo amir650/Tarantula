@@ -1,14 +1,7 @@
 package engine
 
-import (
-	"fmt"
-	"sync"
-)
-
 type King struct {
-	alliance               Alliance
-	position               int
-	isMoved                bool
+	BasePiece
 	isCastled              bool
 	kingSideCastleCapable  bool
 	queenSideCastleCapable bool
@@ -19,66 +12,28 @@ func NewKing(alliance Alliance,
 	isMoved bool,
 	isCastled bool,
 	kingSideCastleCapable bool,
-	queenSideCastleCapable bool) *Piece {
-	king := GetOrCreateKing(alliance, position, isMoved, isCastled, kingSideCastleCapable, queenSideCastleCapable)
-	return &king
-}
-
-var kingCache = struct {
-	sync.Mutex
-	pieces map[string]Piece
-}{
-	pieces: make(map[string]Piece),
-}
-
-func GetKingFromCache(key string) (Piece, bool) {
-	kingCache.Lock()
-	defer kingCache.Unlock()
-
-	piece, found := kingCache.pieces[key]
-	return piece, found
-}
-
-func AddKingToCache(key string, piece Piece) {
-	kingCache.Lock()
-	defer kingCache.Unlock()
-	kingCache.pieces[key] = piece
-}
-
-func GetOrCreateKing(alliance Alliance,
-	position int,
-	isMoved bool,
-	isCastled bool,
-	kingSideCastleCapable bool,
-	queenSideCastleCapable bool) Piece {
-	key := fmt.Sprintf("%d-%d", alliance, position)
-	// Check if the piece is already in the cache
-	cachedPiece, found := GetKingFromCache(key)
-	if !found {
-		// If not found, create a new piece
-		var newKing = King{alliance, position, isMoved, isCastled, kingSideCastleCapable, queenSideCastleCapable}
-		var kingPtr Piece = &newKing
-		// Add it to the cache
-		AddKingToCache(key, kingPtr)
-		// Use the newly created piece
-		cachedPiece = kingPtr
+	queenSideCastleCapable bool) King {
+	return King{
+		BasePiece:              BasePiece{alliance: alliance, position: position, isMoved: isMoved},
+		isCastled:              isCastled,
+		kingSideCastleCapable:  kingSideCastleCapable,
+		queenSideCastleCapable: queenSideCastleCapable,
 	}
-	return cachedPiece
 }
 
-func (king *King) GetAlliance() Alliance {
+func (king King) GetAlliance() Alliance {
 	return king.alliance
 }
 
-func (king *King) GetPiecePosition() int {
+func (king King) GetPiecePosition() int {
 	return king.position
 }
 
-func (king *King) String() string {
-	return "K"
+func (king King) String() string {
+	return KingIdentifier
 }
 
-func (king *King) CalculateLegalMoves(board *Board) []Move {
+func (king King) CalculateLegalMoves(board *Board) []Move {
 
 	isFirstColumnExclusion := func(currentCandidate int, candidateDestinationCoordinate int) bool {
 		return FirstColumn[currentCandidate] && ((candidateDestinationCoordinate == -9) || (candidateDestinationCoordinate == -1) ||
@@ -116,24 +71,24 @@ func (king *King) CalculateLegalMoves(board *Board) []Move {
 	return legalMoves
 }
 
-func (king *King) MovePiece(m Move) *Piece {
-	return NewKing(king.GetAlliance(), m.GetTo(), true, king.isCastled, king.kingSideCastleCapable, king.queenSideCastleCapable)
+func (king King) MovePiece(m Move) Piece {
+	return King{BasePiece{king.GetAlliance(), m.GetTo(), true}, king.isCastled, king.kingSideCastleCapable, king.queenSideCastleCapable}
 }
 
-func (king *King) Equals(other Piece) bool {
+func (king King) Equals(other Piece) bool {
 	op := other
-	if k, ok := op.(*King); ok {
+	if k, ok := op.(King); ok {
 		return king.GetPiecePosition() == k.GetPiecePosition() && king.GetAlliance() == k.GetAlliance()
 	} else {
 		return false
 	}
 }
 
-func (king *King) GetPieceValue() int {
+func (king King) GetPieceValue() int {
 	return 10000
 }
 
-func (king *King) GetLocationBonus() int {
+func (king King) GetLocationBonus() int {
 	a := king.GetAlliance()
 	switch a {
 	case WHITE:
