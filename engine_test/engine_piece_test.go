@@ -7,8 +7,8 @@ import (
 
 func TestKnightCreation(t *testing.T) {
 
-	p1 := *engine.NewKnight(engine.WHITE, 30, false)
-	p2 := *engine.NewKnight(engine.WHITE, 30, false)
+	p1 := engine.NewKnight(engine.WHITE, 30, false)
+	p2 := engine.NewKnight(engine.WHITE, 30, false)
 
 	if !p1.Equals(p2) {
 		t.Errorf("Should refer to the same thing!")

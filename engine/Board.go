@@ -10,7 +10,7 @@ type BoardBuilder struct {
 	piecesMap      map[int]Piece
 	nextMoveMaker  *Alliance
 	enPassantPawn  *Pawn
-	moveTransition *MoveTransition
+	moveTransition *Move
 }
 
 func NewBoardBuilder() *BoardBuilder {
@@ -32,7 +32,7 @@ func (builder *BoardBuilder) setEnPassantPawn(pawn Pawn) *BoardBuilder {
 	return builder
 }
 
-func (builder *BoardBuilder) setMoveTransition(moveTransition MoveTransition) *BoardBuilder {
+func (builder *BoardBuilder) setMoveTransition(moveTransition Move) *BoardBuilder {
 	builder.moveTransition = &moveTransition
 	return builder
 }
@@ -42,15 +42,16 @@ func (builder *BoardBuilder) Build() *Board {
 }
 
 type Board struct {
-	gameBoard     *[]Tile
-	whitePieces   *[]Piece
-	blackPieces   *[]Piece
-	whiteLegals   *[]Move
-	blackLegals   *[]Move
-	whitePlayer   *Player
-	blackPlayer   *Player
-	currentPlayer *Player
-	enPassantPawn *Pawn
+	gameBoard      *[]Tile
+	whitePieces    *[]Piece
+	blackPieces    *[]Piece
+	whiteLegals    *[]Move
+	blackLegals    *[]Move
+	whitePlayer    *Player
+	blackPlayer    *Player
+	currentPlayer  *Player
+	enPassantPawn  *Pawn
+	transitionMove *Move
 }
 
 func (b Board) GetCurrentPlayer() Player {
@@ -63,6 +64,10 @@ func (b Board) GetWhitePlayer() Player {
 
 func (b Board) GetBlackPlayer() Player {
 	return *b.blackPlayer
+}
+
+func (b Board) GetTransitionMove() Move {
+	return *b.transitionMove
 }
 
 func (b Board) getPiecesByAlliance(alliance Alliance) []Piece {
@@ -151,14 +156,15 @@ func NewBoard(builder *BoardBuilder) *Board {
 	var currentPlayer Player
 
 	protoBoard := Board{
-		gameBoard:     &tiles,
-		whitePieces:   &whitePieces,
-		blackPieces:   &blackPieces,
-		whiteLegals:   &whiteLegals,
-		blackLegals:   &blackLegals,
-		whitePlayer:   &whitePlayer,
-		blackPlayer:   &blackPlayer,
-		currentPlayer: &currentPlayer,
+		gameBoard:      &tiles,
+		whitePieces:    &whitePieces,
+		blackPieces:    &blackPieces,
+		whiteLegals:    &whiteLegals,
+		blackLegals:    &blackLegals,
+		whitePlayer:    &whitePlayer,
+		blackPlayer:    &blackPlayer,
+		currentPlayer:  &currentPlayer,
+		transitionMove: builder.moveTransition,
 	}
 
 	whiteLegals = calculatePieceLegals(&protoBoard, whitePieces)
@@ -166,7 +172,6 @@ func NewBoard(builder *BoardBuilder) *Board {
 	whitePlayer = NewWhitePlayer(&protoBoard, &whiteLegals, &blackLegals, whiteKing)
 	blackPlayer = NewBlackPlayer(&protoBoard, &whiteLegals, &blackLegals, blackKing)
 	currentPlayer = PickPlayer(*builder.nextMoveMaker, whitePlayer, blackPlayer)
-
 	return &protoBoard
 }
 
@@ -208,7 +213,6 @@ func (b Board) CalculateLegalMoves() *[]Move {
 		if tile.IsOccupied() {
 			var pieceLegals = tile.GetPiece().CalculateLegalMoves(&b)
 			legalMoves = append(legalMoves, pieceLegals...)
-			//fmt.Printf("%s: %v\n", tile.piece, pieceLegals)
 		}
 	}
 	return &legalMoves

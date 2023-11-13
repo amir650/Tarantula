@@ -37,10 +37,6 @@ func playInteractiveGame() {
 		scanner.Scan() // Read a line of input from the user
 		dest := scanner.Text()
 
-		for _, move := range board.GetAllLegalMoves() {
-			fmt.Printf("debug print %s: %s\n", move.GetMovedPiece(), move)
-		}
-
 		// Print the input
 		move := engine.GetMove(board, source, dest)
 		fmt.Printf("You entered: %s %s : [%s]\n", source, dest, move)

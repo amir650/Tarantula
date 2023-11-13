@@ -23,6 +23,7 @@ func (m MajorMove) Execute() *Board {
 	var finishedMovingPiece = mp.MovePiece(m)
 	builder.SetPiece(finishedMovingPiece)
 	builder.SetMoveMaker(m.GetBoard().GetCurrentPlayer().GetOpponent().GetAlliance())
+	builder.setMoveTransition(m)
 	return builder.Build()
 }
 
