@@ -1,10 +1,10 @@
 package engine
 
 type PawnPromotion struct {
-	PawnMove
 	decoratedMove   *PawnMove
 	promotedPawn    Piece
 	promotionTarget Piece
+	PawnMove
 }
 
 func NewPawnPromotion(move PawnMove,

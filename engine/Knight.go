@@ -21,7 +21,6 @@ func (knight Knight) String() string {
 }
 
 func (knight Knight) CalculateLegalMoves(board *Board) []Move {
-
 	isFirstColumnExclusion := func(piecePosition int, currentCandidate int) bool {
 		return FirstColumn[piecePosition] && ((currentCandidate == -17) ||
 			(currentCandidate == -10) || (currentCandidate == 6) || (currentCandidate == 15))
@@ -73,11 +72,11 @@ func (knight Knight) MovePiece(m Move) Piece {
 }
 
 func (knight Knight) Equals(other Piece) bool {
-	if kn, ok := other.(Knight); ok {
+	kn, ok := other.(Knight)
+	if ok {
 		return knight.GetPiecePosition() == kn.GetPiecePosition() && knight.GetAlliance() == kn.GetAlliance()
-	} else {
-		return false
 	}
+	return false
 }
 
 func (knight Knight) GetPieceValue() int {

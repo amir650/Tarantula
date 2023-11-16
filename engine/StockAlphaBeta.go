@@ -3,6 +3,7 @@ package engine
 import (
 	"fmt"
 	"math"
+	"sort"
 	"time"
 )
 
@@ -11,11 +12,11 @@ const quiescenceThreshold = 500
 
 type StockAlphaBeta struct {
 	boardEvaluator  BoardEvaluator
+	frequencyTable  []BoardMoveCount
 	searchDepth     int
 	boardsEvaluated int64
 	quiescenceCount int
 	executionTime   int64
-	frequencyTable  []BoardMoveCount
 	fqIndex         int
 	showDebug       bool
 }
@@ -38,7 +39,10 @@ func (strategy *StockAlphaBeta) Execute(board *Board) Move {
 	moveCounter := 1
 	numMoves := len(board.GetCurrentPlayer().GetLegalMoves())
 
-	for _, move := range board.GetCurrentPlayer().GetLegalMoves() {
+	legals := board.GetCurrentPlayer().GetLegalMoves()
+	sortedMoves(legals)
+
+	for _, move := range legals {
 		strategy.quiescenceCount = 0
 		moveTransition := board.GetCurrentPlayer().MakeMove(move)
 		if moveTransition.GetMoveStatus() == Done {
@@ -62,11 +66,11 @@ func (strategy *StockAlphaBeta) Execute(board *Board) Move {
 				}
 			}
 			if strategy.showDebug {
-				fmt.Printf("\tMiniMax analyzing move (%d/%d) %v scores %d\n", moveCounter, numMoves, move, currentValue)
+				fmt.Printf("\tStockAlphaBeta analyzing move (%d/%d) %v scores %d\n", moveCounter, numMoves, move, currentValue)
 			}
 		} else {
 			if strategy.showDebug {
-				fmt.Printf("\tMiniMax can't execute move (%d/%d) %v\n", moveCounter, numMoves, move)
+				fmt.Printf("\tStockAlphaBeta can't execute move (%d/%d) %v\n", moveCounter, numMoves, move)
 			}
 		}
 		moveCounter++
@@ -90,7 +94,10 @@ func (strategy *StockAlphaBeta) maximize(board *Board,
 		return strategy.boardEvaluator.Evaluate(board, depth)
 	}
 	currentHighest := highest
-	for _, move := range board.GetCurrentPlayer().GetLegalMoves() {
+	legals := board.GetCurrentPlayer().GetLegalMoves()
+	sortedMoves(legals)
+
+	for _, move := range legals {
 		moveTransition := board.GetCurrentPlayer().MakeMove(move)
 		if moveTransition.GetMoveStatus() == Done {
 			toBoard := moveTransition.GetToBoard()
@@ -147,7 +154,9 @@ func (strategy *StockAlphaBeta) minimize(board *Board,
 		return strategy.boardEvaluator.Evaluate(board, depth)
 	}
 	currentLowest := lowest
-	for _, move := range board.GetCurrentPlayer().GetLegalMoves() {
+	legals := board.GetCurrentPlayer().GetLegalMoves()
+	sortedMoves(legals)
+	for _, move := range legals {
 		moveTransition := board.GetCurrentPlayer().MakeMove(move)
 		if moveTransition.GetMoveStatus() == Done {
 			currentLowest = min(currentLowest, strategy.maximize(moveTransition.GetToBoard(), depth-1, highest, currentLowest))
@@ -158,4 +167,19 @@ func (strategy *StockAlphaBeta) minimize(board *Board,
 	}
 	return currentLowest
 
+}
+
+func sortedMoves(slice []Move) {
+	sort.Slice(slice, func(i, j int) bool {
+		c1 := slice[i].IsAttack() && !slice[j].IsAttack()
+		if c1 {
+			return c1
+		}
+		c2 := slice[i].GetMovedPiece().GetLocationBonus() > slice[j].GetMovedPiece().GetLocationBonus()
+		if c2 {
+			return c2
+		}
+
+		return slice[i].GetMovedPiece().GetPieceValue() > slice[j].GetMovedPiece().GetPieceValue()
+	})
 }

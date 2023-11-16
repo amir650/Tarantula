@@ -113,11 +113,11 @@ func (pawn Pawn) MovePiece(m Move) Piece {
 }
 
 func (pawn Pawn) Equals(other Piece) bool {
-	if p, ok := other.(Pawn); ok {
+	p, ok := other.(Pawn)
+	if ok {
 		return pawn.GetPiecePosition() == p.GetPiecePosition() && pawn.GetAlliance() == p.GetAlliance()
-	} else {
-		return false
 	}
+	return false
 }
 
 func (pawn Pawn) GetPieceValue() int {

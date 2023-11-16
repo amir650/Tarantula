@@ -28,7 +28,7 @@ func (rook Rook) CalculateLegalMoves(board *Board) []Move {
 
 	var legalMoves []Move
 	var CandidateMoveCoordinates = []int{-8, -1, 1, 8}
-	var candidateDestinationCoordinate = 0
+	candidateDestinationCoordinate := 0
 
 	for _, currentCandidate := range CandidateMoveCoordinates {
 		candidateDestinationCoordinate = rook.position
@@ -61,11 +61,11 @@ func (rook Rook) MovePiece(m Move) Piece {
 }
 
 func (rook Rook) Equals(other Piece) bool {
-	if r, ok := other.(Rook); ok {
+	r, ok := other.(Rook)
+	if ok {
 		return rook.GetPiecePosition() == r.GetPiecePosition() && rook.GetAlliance() == r.GetAlliance()
-	} else {
-		return false
 	}
+	return false
 }
 
 func (rook Rook) GetPieceValue() int {

@@ -70,11 +70,19 @@ func kingThreats(player Player, depth int) int {
 }
 
 func check(player Player) int {
-	return 0
+	if player.IsInCheck() {
+		return CheckBonus
+	} else {
+		return 0
+	}
 }
 
 func depthBonus(depth int) int {
-	return 0
+	if depth == 0 {
+		return 1
+	} else {
+		return 100 * depth
+	}
 }
 
 func mobility(player Player) int {

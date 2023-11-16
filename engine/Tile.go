@@ -1,8 +1,8 @@
 package engine
 
 type Tile struct {
-	tileID int
 	piece  *Piece
+	tileID int
 }
 
 func (t Tile) IsOccupied() bool {
@@ -16,7 +16,6 @@ func (t Tile) GetPiece() Piece {
 func (t Tile) String() string {
 	if t.IsOccupied() {
 		return t.GetPiece().String()
-	} else {
-		return "-"
 	}
+	return "-"
 }

@@ -15,12 +15,10 @@ func GetMove(board *Board, current string, destination string) Move {
 }
 
 func getMoveImpl(board *Board, currentPosition int, destination int) Move {
-
 	for _, move := range board.GetAllLegalMoves() {
 		if move.GetFrom() == currentPosition && move.GetTo() == destination {
 			return move
 		}
 	}
 	return NullMove{}
-
 }

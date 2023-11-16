@@ -2,9 +2,9 @@ package engine
 
 type BaseMove struct {
 	board         *Board
-	toCoordinate  int
 	movedPiece    Piece
 	attackedPiece Piece
+	toCoordinate  int
 	firstMove     bool
 }
 
@@ -35,9 +35,8 @@ func (m BaseMove) GetMovedPiece() Piece {
 func (m BaseMove) GetAttackedPiece() Piece {
 	if m.IsAttack() {
 		return m.attackedPiece
-	} else {
-		return nil
 	}
+	return nil
 }
 
 func (m BaseMove) Execute() *Board {

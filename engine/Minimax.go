@@ -7,11 +7,11 @@ import (
 )
 
 type Minimax struct {
+	boardEvaluator  BoardEvaluator // Assuming BoardEvaluator is larger than or equal to 8 bytes
+	frequencyTable  []BoardMoveCount
 	boardsEvaluated int64
 	executionTime   int64
-	boardEvaluator  BoardEvaluator
 	searchDepth     int
-	frequencyTable  []BoardMoveCount
 	fqIndex         int
 	showDebug       bool
 }
@@ -133,5 +133,4 @@ func (strategy *Minimax) minimize(board *Board, depth int) int {
 		}
 	}
 	return lowestSeenValue
-
 }

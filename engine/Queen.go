@@ -28,7 +28,7 @@ func (queen Queen) CalculateLegalMoves(board *Board) []Move {
 
 	var legalMoves []Move
 	var CandidateMoveCoordinates = []int{-9, -8, -7, -1, 1, 7, 8, 9}
-	var candidateDestinationCoordinate = 0
+	candidateDestinationCoordinate := 0
 
 	for _, currentCandidate := range CandidateMoveCoordinates {
 		candidateDestinationCoordinate = queen.position
@@ -37,9 +37,7 @@ func (queen Queen) CalculateLegalMoves(board *Board) []Move {
 				break
 			}
 			candidateDestinationCoordinate += currentCandidate
-			if !IsValidTileCoordinate(candidateDestinationCoordinate) {
-				break
-			} else {
+			if IsValidTileCoordinate(candidateDestinationCoordinate) {
 				var candidateDestinationTile = board.GetTile(candidateDestinationCoordinate)
 				if !candidateDestinationTile.IsOccupied() {
 					legalMoves = append(legalMoves, NewMajorMove(board, queen, candidateDestinationCoordinate))
@@ -51,6 +49,8 @@ func (queen Queen) CalculateLegalMoves(board *Board) []Move {
 					}
 					break
 				}
+			} else {
+				break
 			}
 		}
 	}
@@ -62,11 +62,11 @@ func (queen Queen) MovePiece(m Move) Piece {
 }
 
 func (queen Queen) Equals(other Piece) bool {
-	if q, ok := other.(Queen); ok {
+	q, ok := other.(Queen)
+	if ok {
 		return queen.GetPiecePosition() == q.GetPiecePosition() && queen.GetAlliance() == q.GetAlliance()
-	} else {
-		return false
 	}
+	return false
 }
 
 func (queen Queen) GetPieceValue() int {

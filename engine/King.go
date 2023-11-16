@@ -34,7 +34,6 @@ func (king King) String() string {
 }
 
 func (king King) CalculateLegalMoves(board *Board) []Move {
-
 	isFirstColumnExclusion := func(currentCandidate int, candidateDestinationCoordinate int) bool {
 		return FirstColumn[currentCandidate] && ((candidateDestinationCoordinate == -9) || (candidateDestinationCoordinate == -1) ||
 			(candidateDestinationCoordinate == 7))
@@ -48,7 +47,7 @@ func (king King) CalculateLegalMoves(board *Board) []Move {
 	var legalMoves []Move
 
 	var CandidateMoveCoordinates = []int{-9, -8, -7, -1, 1, 7, 8, 9}
-	var candidateDestinationCoordinate = 0
+	candidateDestinationCoordinate := 0
 	for _, currentCandidate := range CandidateMoveCoordinates {
 		if isFirstColumnExclusion(king.position, currentCandidate) || isEighthColumnExclusion(king.position, currentCandidate) {
 			continue
@@ -77,11 +76,11 @@ func (king King) MovePiece(m Move) Piece {
 
 func (king King) Equals(other Piece) bool {
 	op := other
-	if k, ok := op.(King); ok {
+	k, ok := op.(King)
+	if ok {
 		return king.GetPiecePosition() == k.GetPiecePosition() && king.GetAlliance() == k.GetAlliance()
-	} else {
-		return false
 	}
+	return false
 }
 
 func (king King) GetPieceValue() int {

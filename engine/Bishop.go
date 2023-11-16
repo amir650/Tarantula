@@ -21,7 +21,6 @@ func (bishop Bishop) String() string {
 }
 
 func (bishop Bishop) CalculateLegalMoves(board *Board) []Move {
-
 	isDiagonalExclusion := func(currentCandidate int, candidateDestinationCoordinate int) bool {
 		return (FirstColumn[candidateDestinationCoordinate] &&
 			((currentCandidate == -9) || (currentCandidate == 7))) ||
@@ -31,7 +30,7 @@ func (bishop Bishop) CalculateLegalMoves(board *Board) []Move {
 
 	var legalMoves []Move
 	var CandidateMoveCoordinates = []int{-9, -7, 7, 9}
-	var candidateDestinationCoordinate = 0
+	candidateDestinationCoordinate := 0
 
 	for _, currentCandidate := range CandidateMoveCoordinates {
 		candidateDestinationCoordinate = bishop.position
@@ -64,11 +63,11 @@ func (bishop Bishop) MovePiece(m Move) Piece {
 }
 
 func (bishop Bishop) Equals(other Piece) bool {
-	if kn, ok := other.(*Bishop); ok {
+	kn, ok := other.(Bishop)
+	if ok {
 		return bishop.GetPiecePosition() == kn.GetPiecePosition() && bishop.GetAlliance() == kn.GetAlliance()
-	} else {
-		return false
 	}
+	return false
 }
 
 func (bishop Bishop) GetPieceValue() int {

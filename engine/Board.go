@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"strings"
 	"sync"
 )
@@ -34,6 +33,19 @@ func (builder *BoardBuilder) setEnPassantPawn(pawn Pawn) *BoardBuilder {
 
 func (builder *BoardBuilder) setMoveTransition(moveTransition Move) *BoardBuilder {
 	builder.moveTransition = &moveTransition
+	return builder
+}
+
+func (builder *BoardBuilder) basicSetup(m Move) *BoardBuilder {
+	mp := m.GetMovedPiece()
+	for _, piece := range m.GetBoard().GetCurrentPlayer().GetActivePieces() {
+		if !mp.Equals(piece) {
+			builder.SetPiece(piece)
+		}
+	}
+	for _, piece := range m.GetBoard().GetCurrentPlayer().GetOpponent().GetActivePieces() {
+		builder.SetPiece(piece)
+	}
 	return builder
 }
 
@@ -72,8 +84,6 @@ func (b Board) GetTransitionMove() Move {
 
 func (b Board) getPiecesByAlliance(alliance Alliance) []Piece {
 	var result []Piece
-	var t Tile
-	fmt.Println(t)
 	for _, tile := range b.GetAllTiles() {
 		if tile.IsOccupied() {
 			if tile.GetPiece().GetAlliance() == alliance {
@@ -127,16 +137,14 @@ func NewBoard(builder *BoardBuilder) *Board {
 			}
 			if piece.GetAlliance() == WHITE {
 				whitePieces = append(whitePieces, piece)
-				switch (piece).(type) {
-				case King:
+				if _, ok := (piece).(King); ok {
 					if k, ok := piece.(King); ok {
 						whiteKing = &k
 					}
 				}
 			} else if piece.GetAlliance() == BLACK {
 				blackPieces = append(blackPieces, piece)
-				switch piece.(type) {
-				case King:
+				if _, ok := piece.(King); ok {
 					if k, ok := piece.(King); ok {
 						blackKing = &k
 					}
@@ -317,7 +325,6 @@ func initializePositionToCoordinateMap() map[string]int {
 }
 
 func CreateStandardChessBoard() *Board {
-
 	boardBuilder := NewBoardBuilder()
 
 	boardBuilder.SetPiece(Rook{BasePiece{BLACK, 0, false}})

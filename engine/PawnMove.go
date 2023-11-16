@@ -14,18 +14,8 @@ func (m PawnMove) String() string {
 
 func (m PawnMove) Execute() *Board {
 	builder := NewBoardBuilder()
-
-	for _, piece := range m.GetBoard().GetCurrentPlayer().GetActivePieces() {
-		mp := m.GetMovedPiece()
-		if !mp.Equals(piece) {
-			builder.SetPiece(piece)
-		}
-	}
-	for _, piecePtr := range m.GetBoard().GetCurrentPlayer().GetOpponent().GetActivePieces() {
-		builder.SetPiece(piecePtr)
-	}
-	mp := m.GetMovedPiece()
-	var finishedMovingPiece = mp.MovePiece(m)
+	builder.basicSetup(m)
+	finishedMovingPiece := m.GetMovedPiece().MovePiece(m)
 	builder.SetPiece(finishedMovingPiece)
 	builder.SetMoveMaker(m.GetBoard().GetCurrentPlayer().GetOpponent().GetAlliance())
 	builder.setMoveTransition(m)

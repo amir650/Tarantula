@@ -15,7 +15,7 @@ func IsValidTileCoordinate(coordinate int) bool {
 
 func createRowValues(rowNumber int) []bool {
 	rowValues := make([]bool, 64)
-	rowNumber -= 1
+	rowNumber--
 	limit := 8*rowNumber + 8
 	for i := 8 * rowNumber; i < limit; i++ {
 		rowValues[i] = true
